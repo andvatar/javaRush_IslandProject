@@ -6,7 +6,6 @@ import java.util.concurrent.locks.ReentrantLock;
 public abstract class Wildlife {
     public final Lock lock = new ReentrantLock();
     protected volatile double hp;
-    protected boolean moved;
 
     protected Location location;
 

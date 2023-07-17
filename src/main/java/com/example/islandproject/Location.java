@@ -2,7 +2,6 @@ package com.example.islandproject;
 
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -48,12 +47,14 @@ public class Location {
         wildlife = List.of(animals, plants);
     }
 
-    public void startFeeding() {
+    // животные в этой локации начинают питаться и размножаться
+    public void startActivity() {
         ExecutorService executorService = Executors.newCachedThreadPool();
         List<Callable<Void>> taskList = new ArrayList<>(); //= getAnimals().
         for (Animal animal:getAnimals()) {
             taskList.add(() -> {
                 animal.feed();
+                animal.reproduce();
                 return null;
             });
         }
@@ -126,7 +127,7 @@ public class Location {
     @Override
     public String toString() {
         return "Location{" +
-                "wildlife=" + wildlife.stream().flatMap(c -> c.stream()).collect(Collectors.groupingBy(Wildlife::getType, Collectors.counting())) +
+                "wildlife=" + wildlife.stream().flatMap(Collection::stream).collect(Collectors.groupingBy(Wildlife::getType, Collectors.counting())) +
                 ", x=" + x +
                 ", y=" + y +
                 '}';

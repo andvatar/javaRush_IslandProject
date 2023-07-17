@@ -4,16 +4,23 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
 public abstract class Animal extends Wildlife {
+
+    protected volatile boolean canReproduce;
+    protected boolean moved;
+    private final WildlifeFactory wildlifeFactory = new WildlifeFactory();
 
     // миграция из одной локации в другую
     public void migrate(Island island) {
         move(findNextLocation(findPossibleLocations(island)));
     }
 
+    // поиск и поедание пищи
     public void feed() {
 
+        // все, что можем съесть
         List<Wildlife> foodList = location
                 .getWildlife()
                 .stream()
@@ -21,8 +28,16 @@ public abstract class Animal extends Wildlife {
                 .toList();
 
         for (var food:foodList) {
+            // животное съели пока оно искало еду :(
+            if(!isAlive()) {
+                break;
+            }
             if(hp < 100) {
-                if (lockFoodAndEater(food)) {
+                // еду съели до нас, ищем дальше
+                if(!food.isAlive()) {
+                    continue;
+                }
+                if (lockPartners(food)) {
                     try {
                         if (ThreadLocalRandom.current().nextInt(100) > getChanceToEat(food.getType())) {
                             eat(food);
@@ -35,6 +50,42 @@ public abstract class Animal extends Wildlife {
             }
             else {
                 break;
+            }
+        }
+    }
+
+    // размножаться
+    public void reproduce() {
+        // список потенциальных партнеров = все животные своего класса в этой локации
+        List<Animal> partners = location
+                .getAnimals()
+                .stream()
+                .filter(animal -> animal.getType() == this.getType() && animal != this)
+                .toList();
+
+        for (var partner:partners) {
+            // животное съели пока оно искало пару :(
+            if(!isAlive()) {
+                break;
+            }
+            // партнера съели или успели спариться до нас
+            if(!partner.isAlive() || !partner.canReproduce) {
+                continue;
+            }
+            if (lockPartners(partner)) {
+                try {
+                    if (ThreadLocalRandom.current().nextInt(100) > 75) {
+                        for (int i = 0; i < this.getKidsAmount(); i++) {
+                            Animal child = (Animal) wildlifeFactory.createWildlife(this.getType());
+                            child.setStartLocation(this.location);
+                            child.canReproduce = false;
+                            child.moved = false;
+                        }
+                    }
+                } finally {
+                    lock.unlock();
+                    partner.lock.unlock();
+                }
             }
         }
     }
@@ -65,30 +116,32 @@ public abstract class Animal extends Wildlife {
     }
 
     // блокируем того кто есть и того кого едять
-    private boolean lockFoodAndEater(Wildlife food) {
+    // либо парнеров по спариванию
+    private boolean lockPartners(Wildlife wildlife) {
         boolean eaterLocked = false;
         boolean foodLocked = false;
 
         try {
-            eaterLocked = lock.tryLock();
-            foodLocked = food.lock.tryLock();
-        }
-        finally {
+            eaterLocked = lock.tryLock(100, TimeUnit.MILLISECONDS);
+            foodLocked = wildlife.lock.tryLock(100, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
             if(!(eaterLocked && foodLocked)) {
                 if(eaterLocked) {
                     lock.unlock();
                 }
                 if(foodLocked) {
-                    food.lock.unlock();
+                    wildlife.lock.unlock();
                 }
             }
         }
         return eaterLocked && foodLocked;
     }
 
-    // в конце цикла животные теряют 20 хп
+    // в конце цикла животные теряют 50 хп
     public void starve() {
-        loseHP(20);
+        loseHP(50);
     }
 
     // поиск следующей локации
@@ -139,4 +192,6 @@ public abstract class Animal extends Wildlife {
     public abstract double getFoodToSaturation();
 
     public abstract double getChanceToEat(WildlifeType foodType);
+
+    public abstract int getKidsAmount();
 }

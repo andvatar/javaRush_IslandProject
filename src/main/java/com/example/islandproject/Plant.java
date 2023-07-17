@@ -27,6 +27,7 @@ public class Plant extends Wildlife {
         this.location = location;
     }
 
+    // от растения можно отгрызть кусок и оно останется живым
     @Override
     public double beEaten(double lackOfFood) {
         double eatenFood;

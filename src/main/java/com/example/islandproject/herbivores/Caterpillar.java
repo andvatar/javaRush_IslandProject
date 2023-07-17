@@ -15,6 +15,7 @@ public class Caterpillar extends Herbivores {
     private static final double weight = 700;
     private static final int maxMovementDistance = 0;
     private static final double foodToSaturation = 0;
+    private static final int kidsAmount = 20;
 
     private static final Map<WildlifeType, Integer> chanceToEat =
             ImmutableMap.ofEntries(
@@ -64,5 +65,10 @@ public class Caterpillar extends Herbivores {
     @Override
     public double getChanceToEat(WildlifeType foodType) {
         return chanceToEat.getOrDefault(foodType, 0) / 100d;
+    }
+
+    @Override
+    public int getKidsAmount() {
+        return kidsAmount;
     }
 }

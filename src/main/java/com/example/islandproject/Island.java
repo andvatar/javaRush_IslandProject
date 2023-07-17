@@ -5,6 +5,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+
 public class Island{
     private final Location[][] locations;
     private final WildlifeFactory wildlifeFactory;
@@ -33,16 +34,20 @@ public class Island{
     }
 
     public void startIteration() {
-        // животные не перемещались в этой итерации
-        getAllAnimals().stream().parallel().forEach(animal -> animal.moved = false);
+        // животные не перемещались и не размножались в этой итерации
+        getAllAnimals().stream().parallel().forEach(animal -> {
+            animal.moved = false;
+            animal.canReproduce = true;
+        });
+        // сначала растения
         growPlants();
-        // животные жрут (многопоточно, максимум 10 потоков)
+        // животные жрут и размножаются (многопоточно, максимум 10 потоков)
         // ждем завершения всех потоков прежде чем перейти к следующему шагу
         ExecutorService executorService = Executors.newFixedThreadPool(Math.min(getWidth()*getHeight(), 10));
         List<Callable<Void>> taskList = new ArrayList<>();
         for (Location location:getAllLocations()) {
             taskList.add(() -> {
-                location.startFeeding();
+                location.startActivity();
                 return null;
             });
         }
@@ -51,7 +56,7 @@ public class Island{
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        // в конце каждого цикла животное теряет 20 хп
+        // в конце каждого цикла животное теряет 50 хп
         getAllAnimals().stream().parallel().forEach(Animal::starve);
         // мертвые животные и растения исчезают с острова
         getAllLocations().stream().parallel().forEach(Location::removeDeadWildlife);
@@ -65,6 +70,7 @@ public class Island{
         return getAllAnimals().size() > 0;
     }
 
+    // запускаем рост растений
     private void growPlants() {
         for (Location location : Arrays.stream(locations).flatMap(Arrays::stream).filter(location -> location.checkCapacity(WildlifeType.Plant)).toList()) {
             for (int i = 0; i < 20; i++) {
@@ -88,6 +94,7 @@ public class Island{
         return Arrays.stream(locations).flatMap(Arrays::stream).toList();
     }
 
+    // поиск стартовой локации для животного или растения
     private Location getStartLocation(WildlifeType wildlifeType) {
         List<Location> locationList =Arrays
                 .stream(locations)

@@ -15,6 +15,7 @@ public class Wolf extends Predator {
     private static final double weight = 50;
     private static final int maxMovementDistance = 3;
     private static final double foodToSaturation = 8;
+    private static final int kidsAmount = 2;
 
     private static final Map<WildlifeType, Integer> chanceToEat =
             ImmutableMap.ofEntries(
@@ -64,5 +65,10 @@ public class Wolf extends Predator {
     @Override
     public double getChanceToEat(WildlifeType foodType) {
         return chanceToEat.getOrDefault(foodType, 0) / 100d;
+    }
+
+    @Override
+    public int getKidsAmount() {
+        return kidsAmount;
     }
 }

@@ -15,6 +15,7 @@ public class Deer extends Herbivores {
     private static final double weight = 300;
     private static final int maxMovementDistance = 4;
     private static final double foodToSaturation = 50;
+    private static final int kidsAmount = 2;
 
     private static final Map<WildlifeType, Integer> chanceToEat =
             ImmutableMap.ofEntries(
@@ -64,5 +65,10 @@ public class Deer extends Herbivores {
     @Override
     public double getChanceToEat(WildlifeType foodType) {
         return chanceToEat.getOrDefault(foodType, 0) / 100d;
+    }
+
+    @Override
+    public int getKidsAmount() {
+        return kidsAmount;
     }
 }

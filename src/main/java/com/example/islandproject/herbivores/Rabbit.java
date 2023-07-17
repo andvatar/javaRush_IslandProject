@@ -14,6 +14,7 @@ public class Rabbit extends Herbivores {
     private static final double weight = 2;
     private static final int maxMovementDistance = 2;
     private static final double foodToSaturation = 0.45;
+    private static final int kidsAmount = 7;
 
     private static final Map<WildlifeType, Integer> chanceToEat =
             ImmutableMap.ofEntries(
@@ -63,5 +64,10 @@ public class Rabbit extends Herbivores {
     @Override
     public double getChanceToEat(WildlifeType foodType) {
         return chanceToEat.getOrDefault(foodType, 0) / 100d;
+    }
+
+    @Override
+    public int getKidsAmount() {
+        return kidsAmount;
     }
 }

@@ -14,6 +14,7 @@ public class Mouse extends Herbivores {
     private static final double weight = 0.05;
     private static final int maxMovementDistance = 1;
     private static final double foodToSaturation = 0.01;
+    private static final int kidsAmount = 10;
 
     private static final Map<WildlifeType, Integer> chanceToEat =
             ImmutableMap.ofEntries(
@@ -63,5 +64,10 @@ public class Mouse extends Herbivores {
     @Override
     public double getChanceToEat(WildlifeType foodType) {
         return chanceToEat.getOrDefault(foodType, 0) / 100d;
+    }
+
+    @Override
+    public int getKidsAmount() {
+        return kidsAmount;
     }
 }
