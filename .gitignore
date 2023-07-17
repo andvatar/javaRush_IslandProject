@@ -41,3 +41,5 @@ build/
 /src/main/resources/com/example/islandproject/hello-view.fxml
 /.idea/
 /.mvn/
+/mvnw
+/mvnw.cmd
