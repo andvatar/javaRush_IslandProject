@@ -49,7 +49,7 @@ public class Location {
 
     // животные в этой локации начинают питаться и размножаться
     public void startActivity() {
-        ExecutorService executorService = Executors.newCachedThreadPool();
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
         List<Callable<Void>> taskList = new ArrayList<>(); //= getAnimals().
         for (Animal animal:getAnimals()) {
             taskList.add(() -> {
