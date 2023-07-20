@@ -81,6 +81,9 @@ public abstract class Animal extends Wildlife {
                             child.canReproduce = false;
                             child.moved = false;
                         }
+                        this.canReproduce = false;
+                        partner.canReproduce = false;
+                        break;
                     }
                 } finally {
                     lock.unlock();
